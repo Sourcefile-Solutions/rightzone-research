@@ -117,6 +117,9 @@ function ImportantNoteModal({ onClose }) {
                             <span className="font-semibold text-gray-900">
                                 SEBI Registration Number:{" "}
                             </span>
+                            <span className="font-semibold text-gray-800">
+                                INH000029661
+                            </span>     
                         </p>
                         <p className="text-gray-700 leading-relaxed">
                             <span className="font-semibold text-gray-900">

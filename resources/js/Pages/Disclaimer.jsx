@@ -59,7 +59,10 @@ export default function Disclaimer() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Disclaimer</title>
-                <meta name="description" content="Read the legal disclaimer and research analyst advisory policies of Rightzone Research." />
+                <meta
+                    name="description"
+                    content="Read the legal disclaimer and research analyst advisory policies of Rightzone Research."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section
@@ -83,9 +86,9 @@ export default function Disclaimer() {
                     className="max-w-3xl mx-auto relative z-10"
                     data-aos="fade-up"
                 >
-                                      <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
-    Disclaimer 
-</h1>
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
+                        Disclaimer
+                    </h1>
                     <div className="w-16 h-1 bg-[#1A4B9B] mx-auto rounded-full mb-6" />
                 </div>
             </section>
@@ -106,7 +109,9 @@ export default function Disclaimer() {
                             Standard Warning
                         </h2>
                         <p className="text-md sm:text-[15px] leading-relaxed text-gray-700 font-medium">
-                            Investment in the securities market is subject to market risks. Please read all related documents carefully before investing.
+                            Investment in the securities market is subject to
+                            market risks. Please read all related documents
+                            carefully before investing.
                         </p>
                     </div>
 
@@ -116,22 +121,55 @@ export default function Disclaimer() {
                     </h2>
                     <div className="space-y-4">
                         <p className="text-md sm:text-[15px] leading-relaxed text-gray-600">
-                            Registration granted by SEBI, registration as a Research Analyst, membership with any exchange, or certification from NISM does not guarantee the performance of the Research Analyst or assure any returns to investors.
+                            Registration granted by SEBI, registration as a
+                            Research Analyst, membership with any exchange, or
+                            certification from NISM does not guarantee the
+                            performance of the Research Analyst or assure any
+                            returns to investors.
                         </p>
                         <p className="text-md sm:text-[15px] leading-relaxed text-gray-600">
-                            Any securities, stocks, indices, or financial instruments mentioned on this website are provided solely for illustrative and educational purposes and should not be construed as investment recommendations or solicitation to buy or sell any securities.
+                            Any securities, stocks, indices, or financial
+                            instruments mentioned on this website are provided
+                            solely for illustrative and educational purposes and
+                            should not be construed as investment
+                            recommendations or solicitation to buy or sell any
+                            securities.
                         </p>
                         <p className="text-md sm:text-[15px] leading-relaxed text-gray-600">
-                            By accessing and using <strong>www.rightzoneresearch.com</strong>, you acknowledge that you have read, understood, and agreed to this disclaimer. Investing and trading in financial markets involve substantial risk, including the potential loss of capital. You are solely responsible for your investment and trading decisions, and <strong>Rightzone Research</strong> shall not be liable for any financial losses or damages arising from the use of the information provided on this website.
+                            By accessing and using{" "}
+                            <strong>www.rightzoneresearch.com</strong>, you
+                            acknowledge that you have read, understood, and
+                            agreed to this disclaimer. Investing and trading in
+                            financial markets involve substantial risk,
+                            including the potential loss of capital. You are
+                            solely responsible for your investment and trading
+                            decisions, and <strong>Rightzone Research</strong>{" "}
+                            shall not be liable for any financial losses or
+                            damages arising from the use of the information
+                            provided on this website.
                         </p>
                         <p className="text-md sm:text-[15px] leading-relaxed text-gray-600">
-                            The research reports, market analysis, opinions, and other content published on this website are intended for informational and educational purposes only. They do not constitute personalized investment advice, financial planning, or any guarantee of future performance.
+                            The research reports, market analysis, opinions, and
+                            other content published on this website are intended
+                            for informational and educational purposes only.
+                            They do not constitute personalized investment
+                            advice, financial planning, or any guarantee of
+                            future performance.
                         </p>
                         <p className="text-md sm:text-[15px] leading-relaxed text-gray-600">
-                            All content available on this website, including research reports, recommendations, analysis, and educational material, is the intellectual property of <strong>Rightzone Research</strong> and is intended solely for personal use. Unauthorized reproduction, distribution, modification, or copying of any content without prior written permission is strictly prohibited.
+                            All content available on this website, including
+                            research reports, recommendations, analysis, and
+                            educational material, is the intellectual property
+                            of <strong>Rightzone Research</strong> and is
+                            intended solely for personal use. Unauthorized
+                            reproduction, distribution, modification, or copying
+                            of any content without prior written permission is
+                            strictly prohibited.
                         </p>
                         <p className="text-md sm:text-[15px] leading-relaxed text-gray-600">
-                            By continuing to use this website, you acknowledge and agree to our Terms & Conditions, Privacy Policy, and Disclaimer.
+                            By continuing to use this website, you acknowledge
+                            and agree to our Terms & Conditions, Privacy Policy,
+                            and Disclaimer.
                         </p>
                     </div>
                 </div>

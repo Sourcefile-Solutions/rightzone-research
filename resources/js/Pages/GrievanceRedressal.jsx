@@ -4,7 +4,6 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { Helmet } from "react-helmet";
 
-
 const MarketGridBG = ({ className = "" }) => (
     <svg
         className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
@@ -102,7 +101,10 @@ export default function GrievanceRedressal() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Grievance Redressal</title>
-                <meta name="description" content="Read about our structured grievance redressal mechanism and compliance officer contact details." />
+                <meta
+                    name="description"
+                    content="Read about our structured grievance redressal mechanism and compliance officer contact details."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section

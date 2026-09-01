@@ -89,7 +89,10 @@ export default function PrivacyPolicy() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Privacy Policy</title>
-                <meta name="description" content="Read the Privacy Policy of Rightzone Research to understand how we collect, use, and safeguard your personal information." />
+                <meta
+                    name="description"
+                    content="Read the Privacy Policy of Rightzone Research to understand how we collect, use, and safeguard your personal information."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section
@@ -113,9 +116,9 @@ export default function PrivacyPolicy() {
                     className="max-w-3xl mx-auto relative z-10"
                     data-aos="fade-up"
                 >
-                                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
-    Privacy <span className="text-[#F36E21]">Policy</span>
-</h1>
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
+                        Privacy <span className="text-[#F36E21]">Policy</span>
+                    </h1>
                     <div className="w-16 h-1 bg-[#1A4B9B] mx-auto rounded-full mb-6" />
                 </div>
             </section>

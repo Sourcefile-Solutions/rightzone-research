@@ -213,7 +213,10 @@ export default function Services() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Services</title>
-                <meta name="description" content="Discover our specialized investment research advisory, F&O strategies, and wealth creation services." />
+                <meta
+                    name="description"
+                    content="Discover our specialized investment research advisory, F&O strategies, and wealth creation services."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section

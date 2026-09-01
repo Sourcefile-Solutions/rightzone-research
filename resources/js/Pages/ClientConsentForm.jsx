@@ -228,6 +228,60 @@ function Modal({ title, onClose, children }) {
     );
 }
 
+/* ---------- API config ----------
+   Rightzone Research's own Laravel backend. Mirrors the same
+   checkphone / verify-otp / get-phone / submit-kyc contract used
+   on the Supreme Nifty Traders KYC form. */
+const API_BASE = "/api/kyc";
+const ENDPOINTS = {
+    checkPhone: `${API_BASE}/checkphone`, // POST { phone }
+    verifyOtp: `${API_BASE}/verify-otp`, // POST { phone, otp } -> { token }
+    getPhone: `${API_BASE}/get-phone`, // GET (auth) -> { fields, mandatory, data }
+    submitKyc: `${API_BASE}/submit-kyc`, // POST multipart (auth)
+};
+
+const TEXT_FIELD_MAP = {
+    fullName: "full_name",
+    email: "email",
+    pan: "pan_number",
+    dob: "dob",
+    aadhaar: "aadhaar_number",
+};
+const FILE_FIELD_MAP = {
+    pan: "upload_pan",
+    aadhaarFront: "upload_aadhaar_front",
+    aadhaarBack: "upload_aadhaar_back",
+};
+const ALL_BACKEND_KEYS = [
+    ...Object.values(TEXT_FIELD_MAP),
+    ...Object.values(FILE_FIELD_MAP),
+    "signature",
+];
+
+async function parseJsonSafe(response) {
+    try {
+        return await response.json();
+    } catch (e) {
+        return null;
+    }
+}
+
+function apiErrorMessage(data, fallback) {
+    if (!data) return fallback;
+    if (data.errors) {
+        const firstKey = Object.keys(data.errors)[0];
+        if (
+            firstKey &&
+            Array.isArray(data.errors[firstKey]) &&
+            data.errors[firstKey][0]
+        ) {
+            return data.errors[firstKey][0];
+        }
+    }
+    if (data.message) return data.message;
+    return fallback;
+}
+
 export default function ClientConsentForm() {
     useEffect(() => {
         AOS.init({ duration: 700, once: true, offset: 60 });
@@ -235,8 +289,28 @@ export default function ClientConsentForm() {
 
     const [step, setStep] = useState(1); // 1: mobile, 2: otp, 3: kyc form
     const [mobile, setMobile] = useState("");
+    const [mobileError, setMobileError] = useState("");
     const [otp, setOtp] = useState(["", "", "", ""]);
+    const [otpError, setOtpError] = useState("");
     const [resendTimer, setResendTimer] = useState(60);
+    const [sending, setSending] = useState(false);
+
+    // Auth / dynamic field config (from get-phone)
+    const [authToken, setAuthToken] = useState("");
+    const [visibleFields, setVisibleFields] = useState(ALL_BACKEND_KEYS);
+    const [mandatoryFields, setMandatoryFields] = useState(ALL_BACKEND_KEYS);
+    const [existingFiles, setExistingFiles] = useState({});
+
+    // KYC form fields
+    const [form, setForm] = useState({
+        fullName: "",
+        email: "",
+        pan: "",
+        dob: "",
+        aadhaar: "",
+    });
+    const [formErrors, setFormErrors] = useState({});
+
     const [files, setFiles] = useState({
         pan: null,
         aadhaarFront: null,
@@ -246,6 +320,30 @@ export default function ClientConsentForm() {
     const [accepted, setAccepted] = useState(false);
     const [modal, setModal] = useState(null); // null | 'terms' | 'mitc'
     const [submitted, setSubmitted] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState("");
+
+    const isVisible = (backendKey) => visibleFields.includes(backendKey);
+    const isMandatory = (backendKey) => mandatoryFields.includes(backendKey);
+
+    const authHeaders = (extra) => {
+        const headers = { Accept: "application/json", ...(extra || {}) };
+        if (authToken) headers.Authorization = `Bearer ${authToken}`;
+        return headers;
+    };
+
+    // Resume an already-verified session on refresh.
+    useEffect(() => {
+        const token = localStorage.getItem("rzAuthToken");
+        const phone = localStorage.getItem("rzPhone");
+        if (token && phone) {
+            setAuthToken(token);
+            setMobile(phone);
+            loadFieldConfig(token);
+            setStep(3);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         if (step !== 2 || resendTimer <= 0) return;
@@ -253,21 +351,149 @@ export default function ClientConsentForm() {
         return () => clearTimeout(t);
     }, [step, resendTimer]);
 
-    const sendOtp = () => {
-        if (mobile.trim().length < 10) return;
-        setStep(2);
-        setResendTimer(60);
+    /* ----- Step 1: request OTP ----- */
+    const requestOtp = async (phone) => {
+        const response = await fetch(ENDPOINTS.checkPhone, {
+            method: "POST",
+            headers: authHeaders({ "Content-Type": "application/json" }),
+            body: JSON.stringify({ phone }),
+        });
+        const data = await parseJsonSafe(response);
+        if (!response.ok || (data && data.status === "error")) {
+            throw new Error(
+                apiErrorMessage(
+                    data,
+                    "Could not send verification code. Please try again.",
+                ),
+            );
+        }
+        return data;
     };
 
-    const verifyOtp = () => {
-        if (otp.join("").length < 4) return;
-        setStep(3);
+    const sendOtp = async () => {
+        if (!/^[6-9]\d{9}$/.test(mobile)) {
+            setMobileError("Enter a valid 10-digit mobile number.");
+            return;
+        }
+        setMobileError("");
+        setSending(true);
+        try {
+            await requestOtp(mobile);
+            setResendTimer(60);
+            setOtp(["", "", "", ""]);
+            setStep(2);
+        } catch (err) {
+            setMobileError(err.message);
+        } finally {
+            setSending(false);
+        }
+    };
+
+    const handleResend = async () => {
+        if (resendTimer > 0) return;
+        setOtpError("");
+        try {
+            await requestOtp(mobile);
+            setResendTimer(60);
+            setOtp(["", "", "", ""]);
+            document.getElementById("otp-0")?.focus();
+        } catch (err) {
+            setOtpError(err.message);
+        }
+    };
+
+    /* ----- get-phone: which fields to show/require + prefill ----- */
+    const loadFieldConfig = async (token) => {
+        try {
+            const response = await fetch(ENDPOINTS.getPhone, {
+                method: "GET",
+                headers: authHeaders({ Authorization: `Bearer ${token}` }),
+            });
+            const data = await parseJsonSafe(response);
+            if (!response.ok || !data || data.status === "error") {
+                setVisibleFields(ALL_BACKEND_KEYS);
+                setMandatoryFields(ALL_BACKEND_KEYS);
+                return;
+            }
+
+            const fields = Array.isArray(data.fields)
+                ? data.fields
+                : ALL_BACKEND_KEYS;
+            const mandatory = Array.isArray(data.mandatory)
+                ? data.mandatory
+                : ALL_BACKEND_KEYS;
+            setVisibleFields(fields);
+            setMandatoryFields(mandatory);
+
+            const prefill = data.data || {};
+            setForm((f) => {
+                const next = { ...f };
+                Object.entries(TEXT_FIELD_MAP).forEach(
+                    ([stateKey, backendKey]) => {
+                        if (
+                            prefill[backendKey] !== undefined &&
+                            prefill[backendKey] !== null
+                        ) {
+                            next[stateKey] = prefill[backendKey];
+                        }
+                    },
+                );
+                return next;
+            });
+
+            const nextExisting = {};
+            [...Object.values(FILE_FIELD_MAP), "signature"].forEach(
+                (backendKey) => {
+                    if (prefill[backendKey])
+                        nextExisting[backendKey] = prefill[backendKey];
+                },
+            );
+            setExistingFiles(nextExisting);
+        } catch (err) {
+            console.warn("get-phone failed:", err);
+        }
+    };
+
+    /* ----- Step 2: verify OTP ----- */
+    const verifyOtp = async () => {
+        const code = otp.join("");
+        if (code.length < 4) return;
+        setSending(true);
+        setOtpError("");
+        try {
+            const response = await fetch(ENDPOINTS.verifyOtp, {
+                method: "POST",
+                headers: authHeaders({ "Content-Type": "application/json" }),
+                body: JSON.stringify({ phone: mobile, otp: code }),
+            });
+            const data = await parseJsonSafe(response);
+            if (!response.ok || (data && data.status === "error")) {
+                throw new Error(
+                    apiErrorMessage(data, "Incorrect code. Please try again."),
+                );
+            }
+            if (!data || !data.token) {
+                throw new Error(
+                    "Verification succeeded but no session token was returned.",
+                );
+            }
+            setAuthToken(data.token);
+            localStorage.setItem("rzAuthToken", data.token);
+            localStorage.setItem("rzPhone", data.phone || mobile);
+            await loadFieldConfig(data.token);
+            setStep(3);
+        } catch (err) {
+            setOtpError(err.message);
+        } finally {
+            setSending(false);
+        }
     };
 
     const handleOtpChange = (index, value) => {
         const newOtp = [...otp];
         newOtp[index] = value;
         setOtp(newOtp);
+        setOtpError("");
 
         // Auto-focus next input
         if (value && index < 3) {
@@ -284,17 +510,152 @@ export default function ClientConsentForm() {
         }
     };
 
-    const handleSubmit = (e) => {
+    const updateField = (key, value) => {
+        setForm((f) => ({ ...f, [key]: value }));
+        setFormErrors((e) => ({ ...e, [key]: "" }));
+    };
+
+    /* ----- Step 3: validate + submit-kyc ----- */
+    const validateForm = () => {
+        const errs = {};
+
+        if (
+            isVisible("full_name") &&
+            isMandatory("full_name") &&
+            !form.fullName.trim()
+        )
+            errs.fullName = "Full name is required.";
+        if (
+            isVisible("email") &&
+            isMandatory("email") &&
+            !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
+        )
+            errs.email = "Enter a valid email address.";
+        if (
+            isVisible("pan_number") &&
+            isMandatory("pan_number") &&
+            !/^[A-Z]{5}\d{4}[A-Z]$/.test((form.pan || "").toUpperCase())
+        )
+            errs.pan = "Enter a valid PAN (e.g. ABCDE1234F).";
+        if (isVisible("dob") && isMandatory("dob") && !form.dob)
+            errs.dob = "Date of birth is required.";
+        if (
+            isVisible("aadhaar_number") &&
+            isMandatory("aadhaar_number") &&
+            !/^\d{12}$/.test(form.aadhaar || "")
+        )
+            errs.aadhaar = "Enter a valid 12-digit Aadhaar number.";
+
+        if (
+            isVisible("upload_pan") &&
+            isMandatory("upload_pan") &&
+            !files.pan &&
+            !existingFiles.upload_pan
+        )
+            errs.panFile = "Please upload your PAN card.";
+        if (
+            isVisible("upload_aadhaar_front") &&
+            isMandatory("upload_aadhaar_front") &&
+            !files.aadhaarFront &&
+            !existingFiles.upload_aadhaar_front
+        )
+            errs.aadhaarFrontFile = "Please upload Aadhaar front.";
+        if (
+            isVisible("upload_aadhaar_back") &&
+            isMandatory("upload_aadhaar_back") &&
+            !files.aadhaarBack &&
+            !existingFiles.upload_aadhaar_back
+        )
+            errs.aadhaarBackFile = "Please upload Aadhaar back.";
+
+        if (
+            isVisible("signature") &&
+            isMandatory("signature") &&
+            !signature &&
+            !existingFiles.signature
+        )
+            errs.signature = "Please draw your signature.";
+
+        setFormErrors((e) => ({ ...e, ...errs }));
+        return Object.keys(errs).length === 0;
+    };
+
+    const dataUrlToBlob = async (dataUrl) => {
+        const res = await fetch(dataUrl);
+        return res.blob();
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitError("");
         if (!accepted) return;
-        setSubmitted(true);
+        if (!validateForm()) return;
+
+        setSubmitting(true);
+        try {
+            const fd = new FormData();
+            fd.append("phone", mobile);
+
+            Object.entries(TEXT_FIELD_MAP).forEach(([stateKey, backendKey]) => {
+                if (!isVisible(backendKey)) return;
+                let value = form[stateKey];
+                if (stateKey === "pan") value = (value || "").toUpperCase();
+                if (stateKey === "aadhaar")
+                    value = (value || "").replace(/\D/g, "");
+                fd.append(backendKey, value || "");
+            });
+
+            Object.entries(FILE_FIELD_MAP).forEach(([stateKey, backendKey]) => {
+                if (!isVisible(backendKey)) return;
+                const file = files[stateKey];
+                if (file) fd.append(backendKey, file);
+            });
+
+            if (isVisible("signature") && signature) {
+                const blob = await dataUrlToBlob(signature);
+                fd.append("signature", blob, "signature.png");
+            }
+
+            fd.append("fields", JSON.stringify(visibleFields));
+            fd.append("mandatory", JSON.stringify(mandatoryFields));
+            fd.append("existingFiles", JSON.stringify(existingFiles));
+
+            const response = await fetch(ENDPOINTS.submitKyc, {
+                method: "POST",
+                headers: authHeaders(), // no Content-Type — browser sets multipart boundary
+                body: fd,
+            });
+            const data = await parseJsonSafe(response);
+            if (!response.ok || (data && data.status === "error")) {
+                console.error("submit-kyc failed", {
+                    status: response.status,
+                    statusText: response.statusText,
+                    data,
+                });
+                throw new Error(
+                    apiErrorMessage(
+                        data,
+                        "Submission failed. Please review your details and try again.",
+                    ),
+                );
+            }
+
+            setSubmitted(true);
+        } catch (err) {
+            setSubmitError(err.message);
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Client Consent Form</title>
-                <meta name="description" content="Complete the Client Consent Form for Rightzone Research analyst services." />
+                <meta
+                    name="description"
+                    content="Complete the Client Consent Form for Rightzone Research analyst services."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section
@@ -388,9 +749,21 @@ export default function ClientConsentForm() {
                                 Consent Submitted
                             </h2>
                             <p className="text-md text-gray-500 leading-relaxed">
-                                Thank you. Your client consent form has been
-                                received. Our team will reach out once your KYC
-                                verification is complete.
+                                Thank you
+                                {form.fullName
+                                    ? `, ${form.fullName.split(" ")[0]}`
+                                    : ""}
+                                . Your client consent form has been received.
+                                Our team will reach out
+                                {form.email ? (
+                                    <>
+                                        {" "}
+                                        at <strong>{form.email}</strong>{" "}
+                                    </>
+                                ) : (
+                                    " "
+                                )}
+                                once your KYC verification is complete.
                             </p>
                         </div>
                     ) : (
@@ -426,24 +799,33 @@ export default function ClientConsentForm() {
                                             type="tel"
                                             maxLength={10}
                                             value={mobile}
-                                            onChange={(e) =>
+                                            onChange={(e) => {
                                                 setMobile(
                                                     e.target.value.replace(
                                                         /\D/g,
                                                         "",
                                                     ),
-                                                )
+                                                );
+                                                setMobileError("");
+                                            }}
+                                            onKeyDown={(e) =>
+                                                e.key === "Enter" && sendOtp()
                                             }
                                             placeholder="Mobile number"
                                             className="flex-grow rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1A4B9B]/30 focus:border-[#1A4B9B] transition"
                                         />
                                     </div>
+                                    {mobileError && (
+                                        <p className="text-xs font-semibold text-red-500 mt-2 relative z-10">
+                                            {mobileError}
+                                        </p>
+                                    )}
                                     <button
                                         onClick={sendOtp}
-                                        disabled={mobile.length < 10}
+                                        disabled={mobile.length < 10 || sending}
                                         className="mt-6 w-auto mx-auto bg-[#F36E21] disabled:opacity-40 text-white font-bold text-xs uppercase tracking-wider px-8 py-2.5 rounded-full hover:bg-opacity-90 transition relative z-10"
                                     >
-                                        Send OTP
+                                        {sending ? "Sending OTP…" : "Send OTP"}
                                     </button>
                                 </div>
                             )}
@@ -488,6 +870,11 @@ export default function ClientConsentForm() {
                                             />
                                         ))}
                                     </div>
+                                    {otpError && (
+                                        <p className="text-xs font-semibold text-red-500 mb-3 relative z-10">
+                                            {otpError}
+                                        </p>
+                                    )}
                                     <div className="flex items-center justify-center gap-4 mt-4 text-sm relative z-10">
                                         <span className="text-gray-400">
                                             {resendTimer > 0
@@ -497,18 +884,27 @@ export default function ClientConsentForm() {
                                         <button
                                             type="button"
                                             disabled={resendTimer > 0}
-                                            onClick={() => setResendTimer(60)}
+                                            onClick={handleResend}
                                             className="font-semibold text-[#1A4B9B] disabled:text-gray-300"
                                         >
                                             Resend OTP
                                         </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setStep(1)}
+                                            className="text-gray-400 underline"
+                                        >
+                                            Edit number
+                                        </button>
                                     </div>
                                     <button
                                         onClick={verifyOtp}
-                                        disabled={otp.join("").length < 4}
+                                        disabled={
+                                            otp.join("").length < 4 || sending
+                                        }
                                         className="mt-6 w-auto mx-auto bg-[#F36E21] disabled:opacity-40 text-white font-bold text-xs uppercase tracking-wider px-8 py-2.5 rounded-full hover:bg-opacity-90 transition relative z-10"
                                     >
-                                        Verify OTP
+                                        {sending ? "Verifying…" : "Verify OTP"}
                                     </button>
                                 </div>
                             )}
@@ -524,94 +920,218 @@ export default function ClientConsentForm() {
                                         your identity documents.
                                     </p>
 
+                                    {submitError && (
+                                        <div className="rounded-xl bg-red-50 border border-red-200 text-red-500 text-sm font-semibold px-4 py-3 mb-5">
+                                            {submitError}
+                                        </div>
+                                    )}
+
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                                        <Field
-                                            label="Full Name (As per Aadhaar)"
-                                            type="text"
-                                            required
-                                            placeholder="Enter your fullname"
-                                        />
-                                        <Field
-                                            label="Email Address"
-                                            type="email"
-                                            required
-                                            placeholder="you@example.com"
-                                        />
-                                        <Field
-                                            label="PAN Number"
-                                            type="text"
-                                            required
-                                            maxLength={10}
-                                            placeholder="ABCDE1234F"
-                                        />
-                                        <Field
-                                            label="Date of Birth"
-                                            type="date"
-                                            required
-                                        />
-                                        <Field
-                                            label="Aadhaar Number"
-                                            type="text"
-                                            required
-                                            maxLength={12}
-                                            placeholder="XXXX XXXX XXXX"
-                                        />
+                                        {isVisible("full_name") && (
+                                            <div className="sm:col-span-2">
+                                                <Field
+                                                    label="Full Name (As per Aadhaar)"
+                                                    type="text"
+                                                    placeholder="Enter your fullname"
+                                                    value={form.fullName}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            "fullName",
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                {formErrors.fullName && (
+                                                    <p className="text-xs font-semibold text-red-500 mt-1.5">
+                                                        {formErrors.fullName}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                        {isVisible("email") && (
+                                            <div>
+                                                <Field
+                                                    label="Email Address"
+                                                    type="email"
+                                                    placeholder="you@example.com"
+                                                    value={form.email}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            "email",
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                {formErrors.email && (
+                                                    <p className="text-xs font-semibold text-red-500 mt-1.5">
+                                                        {formErrors.email}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                        {isVisible("pan_number") && (
+                                            <div>
+                                                <Field
+                                                    label="PAN Number"
+                                                    type="text"
+                                                    maxLength={10}
+                                                    placeholder="ABCDE1234F"
+                                                    value={form.pan}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            "pan",
+                                                            e.target.value.toUpperCase(),
+                                                        )
+                                                    }
+                                                />
+                                                {formErrors.pan && (
+                                                    <p className="text-xs font-semibold text-red-500 mt-1.5">
+                                                        {formErrors.pan}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                        {isVisible("dob") && (
+                                            <div>
+                                                <Field
+                                                    label="Date of Birth"
+                                                    type="date"
+                                                    value={form.dob}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            "dob",
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                                {formErrors.dob && (
+                                                    <p className="text-xs font-semibold text-red-500 mt-1.5">
+                                                        {formErrors.dob}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                        {isVisible("aadhaar_number") && (
+                                            <div>
+                                                <Field
+                                                    label="Aadhaar Number"
+                                                    type="text"
+                                                    maxLength={12}
+                                                    placeholder="XXXX XXXX XXXX"
+                                                    value={form.aadhaar}
+                                                    onChange={(e) =>
+                                                        updateField(
+                                                            "aadhaar",
+                                                            e.target.value.replace(
+                                                                /\D/g,
+                                                                "",
+                                                            ),
+                                                        )
+                                                    }
+                                                />
+                                                {formErrors.aadhaar && (
+                                                    <p className="text-xs font-semibold text-red-500 mt-1.5">
+                                                        {formErrors.aadhaar}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                                        <UploadBox
-                                            label="Upload PAN Card"
-                                            file={files.pan}
-                                            onChange={(f) =>
-                                                setFiles((s) => ({
-                                                    ...s,
-                                                    pan: f,
-                                                }))
-                                            }
-                                            onClear={() =>
-                                                setFiles((s) => ({
-                                                    ...s,
-                                                    pan: null,
-                                                }))
-                                            }
-                                        />
-                                        <UploadBox
-                                            label="Upload Aadhaar Front"
-                                            file={files.aadhaarFront}
-                                            onChange={(f) =>
-                                                setFiles((s) => ({
-                                                    ...s,
-                                                    aadhaarFront: f,
-                                                }))
-                                            }
-                                            onClear={() =>
-                                                setFiles((s) => ({
-                                                    ...s,
-                                                    aadhaarFront: null,
-                                                }))
-                                            }
-                                        />
-                                        <UploadBox
-                                            label="Upload Aadhaar Back"
-                                            file={files.aadhaarBack}
-                                            onChange={(f) =>
-                                                setFiles((s) => ({
-                                                    ...s,
-                                                    aadhaarBack: f,
-                                                }))
-                                            }
-                                            onClear={() =>
-                                                setFiles((s) => ({
-                                                    ...s,
-                                                    aadhaarBack: null,
-                                                }))
-                                            }
-                                        />
+                                        {isVisible("upload_pan") && (
+                                            <div>
+                                                <UploadBox
+                                                    label="Upload PAN Card"
+                                                    file={files.pan}
+                                                    onChange={(f) =>
+                                                        setFiles((s) => ({
+                                                            ...s,
+                                                            pan: f,
+                                                        }))
+                                                    }
+                                                    onClear={() =>
+                                                        setFiles((s) => ({
+                                                            ...s,
+                                                            pan: null,
+                                                        }))
+                                                    }
+                                                />
+                                                {formErrors.panFile && (
+                                                    <p className="text-xs font-semibold text-red-500 mt-1.5">
+                                                        {formErrors.panFile}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                        {isVisible("upload_aadhaar_front") && (
+                                            <div>
+                                                <UploadBox
+                                                    label="Upload Aadhaar Front"
+                                                    file={files.aadhaarFront}
+                                                    onChange={(f) =>
+                                                        setFiles((s) => ({
+                                                            ...s,
+                                                            aadhaarFront: f,
+                                                        }))
+                                                    }
+                                                    onClear={() =>
+                                                        setFiles((s) => ({
+                                                            ...s,
+                                                            aadhaarFront: null,
+                                                        }))
+                                                    }
+                                                />
+                                                {formErrors.aadhaarFrontFile && (
+                                                    <p className="text-xs font-semibold text-red-500 mt-1.5">
+                                                        {
+                                                            formErrors.aadhaarFrontFile
+                                                        }
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                        {isVisible("upload_aadhaar_back") && (
+                                            <div>
+                                                <UploadBox
+                                                    label="Upload Aadhaar Back"
+                                                    file={files.aadhaarBack}
+                                                    onChange={(f) =>
+                                                        setFiles((s) => ({
+                                                            ...s,
+                                                            aadhaarBack: f,
+                                                        }))
+                                                    }
+                                                    onClear={() =>
+                                                        setFiles((s) => ({
+                                                            ...s,
+                                                            aadhaarBack: null,
+                                                        }))
+                                                    }
+                                                />
+                                                {formErrors.aadhaarBackFile && (
+                                                    <p className="text-xs font-semibold text-red-500 mt-1.5">
+                                                        {
+                                                            formErrors.aadhaarBackFile
+                                                        }
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <div className="mb-7">
-                                        <SignaturePad onSave={setSignature} />
-                                    </div>
+                                    {isVisible("signature") && (
+                                        <div className="mb-7">
+                                            <SignaturePad
+                                                onSave={setSignature}
+                                            />
+                                            {formErrors.signature && (
+                                                <p className="text-xs font-semibold text-red-500 mt-1.5">
+                                                    {formErrors.signature}
+                                                </p>
+                                            )}
+                                        </div>
+                                    )}
 
                                     <div className="rounded-xl bg-[#fafbff] border border-gray-100 p-4 mb-3 text-sm text-gray-600 leading-relaxed">
                                         <p className="font-bold text-gray-800 mb-2">
@@ -710,10 +1230,12 @@ export default function ClientConsentForm() {
 
                                     <button
                                         type="submit"
-                                        disabled={!accepted}
+                                        disabled={!accepted || submitting}
                                         className="w-auto mx-auto bg-[#F36E21] disabled:opacity-40 text-white font-bold text-xs uppercase tracking-wider px-8 py-2.5 rounded-full hover:bg-opacity-90 shadow-lg shadow-[#F36E21]/20 transition-all"
                                     >
-                                        Submit Client Consent
+                                        {submitting
+                                            ? "Submitting…"
+                                            : "Submit Client Consent"}
                                     </button>
                                 </form>
                             )}

@@ -136,7 +136,10 @@ export default function BSEHolidays() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | BSE Holidays </title>
-                <meta name="description" content="View the official trading holidays list for the Bombay Stock Exchange (BSE) for the year 2026." />
+                <meta
+                    name="description"
+                    content="View the official trading holidays list for the Bombay Stock Exchange (BSE) for the year 2026."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section
@@ -160,8 +163,9 @@ export default function BSEHolidays() {
                     className="max-w-3xl mx-auto relative z-10"
                     data-aos="fade-up"
                 >
-                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
-                        BSE Holidays <span className="text-[#F36E21]">2026</span>
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
+                        BSE Holidays{" "}
+                        <span className="text-[#F36E21]">2026</span>
                     </h1>
                     <div className="w-16 h-1 bg-[#1A4B9B] mx-auto rounded-full mb-6" />
                 </div>
@@ -234,7 +238,7 @@ export default function BSEHolidays() {
                                     </thead>
                                     <tbody>
                                         {[
-                                             [
+                                            [
                                                 "January 15, 2026",
                                                 "Thursday",
                                                 "MCGM Election day",

@@ -4,7 +4,6 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { Helmet } from "react-helmet";
 
-
 const MarketGridBG = ({ className = "" }) => (
     <svg
         className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
@@ -58,7 +57,7 @@ const SECTIONS = [
     {
         title: "About Rightzone Research",
         paragraphs: [
-            "<strong>Rightzone Research</strong> is a SEBI-registered Research Analyst with Registration No. [Registration Number]. We are engaged in providing independent, objective, and research-based investment recommendations across various market segments. Our research is conducted using systematic analysis, publicly available information, and established research methodologies with the objective of assisting clients in making informed investment decisions.",
+            "<strong>Rightzone Research</strong> is a SEBI-registered Research Analyst with Registration No. INH000029661. We are engaged in providing independent, objective, and research-based investment recommendations across various market segments. Our research is conducted using systematic analysis, publicly available information, and established research methodologies with the objective of assisting clients in making informed investment decisions.",
         ],
     },
     {
@@ -141,7 +140,10 @@ export default function Disclosure() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Disclosure</title>
-                <meta name="description" content="View the mandatory regulatory disclosures and SEBI compliance certificates of Rightzone Research." />
+                <meta
+                    name="description"
+                    content="View the mandatory regulatory disclosures and SEBI compliance certificates of Rightzone Research."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section

@@ -71,7 +71,10 @@ export default function TermsAndConditions() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Terms and Conditions</title>
-                <meta name="description" content="Review the Terms and Conditions of service governing your relationship with Rightzone Research." />
+                <meta
+                    name="description"
+                    content="Review the Terms and Conditions of service governing your relationship with Rightzone Research."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section
@@ -95,9 +98,10 @@ export default function TermsAndConditions() {
                     className="max-w-3xl mx-auto relative z-10"
                     data-aos="fade-up"
                 >
-                                      <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
-    Terms and  <span className="text-[#F36E21]">Conditions</span>
-</h1>
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
+                        Terms and{" "}
+                        <span className="text-[#F36E21]">Conditions</span>
+                    </h1>
                     <div className="w-16 h-1 bg-[#1A4B9B] mx-auto rounded-full mb-6" />
                 </div>
             </section>

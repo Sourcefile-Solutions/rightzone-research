@@ -109,11 +109,8 @@ function BankCard({ bank, index }) {
                         className="text-[14px] font-bold uppercase tracking-widest mb-0.5"
                         style={{ color: bank.accent }}
                     >
-                        Bank Account Name
+                        Bank of India
                     </p>
-                    <h3 className="text-lg font-extrabold text-gray-900">
-                        {bank.bankName}
-                    </h3>
                 </div>
             </div>
 
@@ -181,6 +178,13 @@ function BankCard({ bank, index }) {
                     <div className="w-full h-px bg-gray-100" />
                     <p className="text-sm text-gray-500 leading-relaxed font-medium">
                         📌 {bank.notice}
+                        <a
+                            href={`mailto:${bank.noticeEmail}`}
+                            className="font-bold text-[#1A4B9B]"
+                        >
+                            {bank.noticeEmail}
+                        </a>
+                        {bank.noticeSuffix}
                     </p>
                 </>
             )}
@@ -191,21 +195,14 @@ function BankCard({ bank, index }) {
 const BANKS = [
     {
         accent: "#1A4B9B",
-        bankName: "",
-        name: "",
-        accountNo: "",
-        ifsc: "",
-        branch: "",
-        notice: "Please send the transaction reference to support@rightzoneresearch.com once the payment is complete.",
-    },
-    {
-        accent: "#F36E21",
-        bankName: " ",
-        name: "",
-        accountNo: "",
-        ifsc: "",
-        branch: "",
-        notice: "Please send the transaction reference to support@rightzoneresearch.com once the payment is complete.",
+        bankName: "Bank of India",
+        name: "Rightzone Research",
+        accountNo: "899020110000082",
+        ifsc: "BKID0008990",
+        branch: "Bangalore, Karnataka",
+        notice: "Please send the transaction reference to ",
+        noticeEmail: "support@rightzoneresearch.com",
+        noticeSuffix: " once the payment is complete.",
     },
 ];
 
@@ -218,11 +215,14 @@ export default function Payment() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Payments</title>
-                <meta name="description" content="Make secure payments and choose subscription billing options for Rightzone Research services." />
+                <meta
+                    name="description"
+                    content="Make secure payments and choose subscription billing options for Rightzone Research services."
+                />
             </Helmet>
             {/* ── HERO ── */}
             <section
-                 className="relative pt-20 sm:pt-24 pb-14 sm:pb-20 px-4 text-center overflow-hidden border-b border-gray-100"
+                className="relative pt-20 sm:pt-24 pb-14 sm:pb-20 px-4 text-center overflow-hidden border-b border-gray-100"
                 style={{
                     background:
                         "linear-gradient(135deg, #eaf1ff 0%, #fff3e9 100%)",
@@ -242,10 +242,9 @@ export default function Payment() {
                     className="max-w-3xl mx-auto relative z-10"
                     data-aos="fade-up"
                 >
-                    
                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
-    Payments <span className="text-[#F36E21]"></span>
-</h1>
+                        Payments <span className="text-[#F36E21]"></span>
+                    </h1>
                     <div className="w-16 h-1 bg-[#1A4B9B] mx-auto rounded-full mb-6" />
                 </div>
             </section>
@@ -255,14 +254,16 @@ export default function Payment() {
                 <MarketGridBG className="opacity-40" />
                 <div className="max-w-5xl mx-auto relative z-10 space-y-10">
                     {/* Bank cards */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {BANKS.map((bank, i) => (
-                            <BankCard
-                                key={bank.bankName}
-                                bank={bank}
-                                index={i}
-                            />
-                        ))}
+                    <div className="flex justify-center">
+                        <div className="w-full max-w-lg">
+                            {BANKS.map((bank, i) => (
+                                <BankCard
+                                    key={bank.bankName || i}
+                                    bank={bank}
+                                    index={i}
+                                />
+                            ))}
+                        </div>
                     </div>
 
                     {/* Important Payment Notice */}

@@ -6,12 +6,14 @@ import { Helmet } from "react-helmet";
 
 // Premium subtle dot-grid matrix background for the pricing area
 const MarketGridBG = ({ className = "" }) => (
-    <div className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`}>
-        <div 
+    <div
+        className={`absolute inset-0 pointer-events-none overflow-hidden ${className}`}
+    >
+        <div
             className="absolute inset-0 opacity-[0.12]"
             style={{
                 backgroundImage: `radial-gradient(#1A4B9B 1.2px, transparent 1.2px)`,
-                backgroundSize: '32px 32px',
+                backgroundSize: "32px 32px",
             }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#fafbff]/80 to-[#fafbff]" />
@@ -26,7 +28,16 @@ const PLANS = [
         quarterly: "44,990",
         accent: "#1A4B9B",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <line x1="12" y1="20" x2="12" y2="10" />
                 <line x1="18" y1="20" x2="18" y2="4" />
                 <line x1="6" y1="20" x2="6" y2="16" />
@@ -40,7 +51,16 @@ const PLANS = [
         quarterly: "47,990",
         accent: "#F36E21",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
             </svg>
         ),
@@ -52,7 +72,16 @@ const PLANS = [
         quarterly: "49,990",
         accent: "#1A4B9B",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 8v8" />
                 <path d="M8 12h8" />
@@ -66,7 +95,16 @@ const PLANS = [
         quarterly: "52,990",
         accent: "#F36E21",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <path d="M3 3v18h18" />
                 <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3" />
             </svg>
@@ -79,7 +117,16 @@ const PLANS = [
         quarterly: "66,990",
         accent: "#1A4B9B",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
         ),
@@ -91,7 +138,16 @@ const PLANS = [
         quarterly: "73,990",
         accent: "#F36E21",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
             </svg>
         ),
@@ -103,7 +159,16 @@ const PLANS = [
         quarterly: "98,990",
         accent: "#1A4B9B",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
             </svg>
         ),
@@ -115,7 +180,16 @@ const PLANS = [
         quarterly: "1,19,990",
         accent: "#F36E21",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
         ),
@@ -127,7 +201,16 @@ const PLANS = [
         quarterly: "34,990",
         accent: "#1A4B9B",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z" />
             </svg>
         ),
@@ -139,7 +222,16 @@ const PLANS = [
         quarterly: "45,990",
         accent: "#F36E21",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <circle cx="12" cy="12" r="10" />
                 <path d="M12 6v6l4 2" />
             </svg>
@@ -152,7 +244,16 @@ const PLANS = [
         quarterly: "1,18,990",
         accent: "#1A4B9B",
         icon: (
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            >
                 <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
                 <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
             </svg>
@@ -174,11 +275,13 @@ function PlanCard({ plan, index }) {
                 <div className="flex items-center justify-between mb-8">
                     <div
                         className="w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-                        style={{ background: `${plan.accent}12`, color: plan.accent }}
+                        style={{
+                            background: `${plan.accent}12`,
+                            color: plan.accent,
+                        }}
                     >
                         {plan.icon}
                     </div>
-                    
                 </div>
 
                 <h3 className="text-xl font-bold text-gray-900 mb-6 group-hover:text-gray-800 transition-colors">
@@ -189,17 +292,24 @@ function PlanCard({ plan, index }) {
             {/* Structured Bordered Pricing Tier Frame */}
             <div className="bg-[#fafbfe] border border-gray-100 rounded-2xl p-5 space-y-4">
                 <div className="flex items-baseline justify-between border-b border-gray-200/60 pb-3">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Monthly</span>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Monthly
+                    </span>
                     <div>
-                        <span className="text-2xl font-black tracking-tight" style={{ color: plan.accent }}>
+                        <span
+                            className="text-2xl font-black tracking-tight"
+                            style={{ color: plan.accent }}
+                        >
                             ₹{plan.monthly}
                         </span>
                         <span className="text-xs text-gray-400 ml-1">/mo</span>
                     </div>
                 </div>
-                
+
                 <div className="flex items-baseline justify-between pt-1">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Quarterly</span>
+                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Quarterly
+                    </span>
                     <div>
                         <span className="text-md font-bold text-gray-700">
                             ₹{plan.quarterly}
@@ -221,7 +331,10 @@ export default function Pricing() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research| Pricing</title>
-                <meta name="description" content="Explore our pricing structures and customized research advisory subscription plans." />
+                <meta
+                    name="description"
+                    content="Explore our pricing structures and customized research advisory subscription plans."
+                />
             </Helmet>
             {/* ============ 1. HERO (UNTOUCHED - AS SPECIFIED) ============ */}
             <section
@@ -253,8 +366,16 @@ export default function Pricing() {
                             />
                         </pattern>
                         <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#ffffff" stopOpacity="0" />
-                            <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
+                            <stop
+                                offset="0%"
+                                stopColor="#ffffff"
+                                stopOpacity="0"
+                            />
+                            <stop
+                                offset="100%"
+                                stopColor="#ffffff"
+                                stopOpacity="1"
+                            />
                         </linearGradient>
                     </defs>
                     <rect width="1200" height="800" fill="url(#grid)" />
@@ -301,7 +422,10 @@ export default function Pricing() {
                     {GROUPS.map((group) => (
                         <div key={group}>
                             {/* Updated Group Headers with modern minimalistic accent lines */}
-                            <div className="mb-12 flex items-center justify-between gap-6" data-aos="fade-up">
+                            <div
+                                className="mb-12 flex items-center justify-between gap-6"
+                                data-aos="fade-up"
+                            >
                                 <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
                                     {group}
                                 </h2>

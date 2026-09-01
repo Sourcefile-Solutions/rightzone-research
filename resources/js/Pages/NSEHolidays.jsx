@@ -136,7 +136,10 @@ export default function NSEHolidays() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | NSE Holidays </title>
-                <meta name="description" content="View the official trading holidays list for the National Stock Exchange (NSE) for the year 2026." />
+                <meta
+                    name="description"
+                    content="View the official trading holidays list for the National Stock Exchange (NSE) for the year 2026."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section
@@ -161,7 +164,8 @@ export default function NSEHolidays() {
                     data-aos="fade-up"
                 >
                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
-                        NSE Holidays <span className="text-[#F36E21]">2026</span>
+                        NSE Holidays{" "}
+                        <span className="text-[#F36E21]">2026</span>
                     </h1>
                     <div className="w-16 h-1 bg-[#1A4B9B] mx-auto rounded-full mb-6" />
                 </div>

@@ -6,20 +6,48 @@ function AuthenticateTeamModal({ onClose }) {
     const [phone, setPhone] = useState("");
     const [error, setError] = useState("");
     const [submitting, setSubmitting] = useState(false);
+    const [resultMessage, setResultMessage] = useState("");
+    const [found, setFound] = useState(null);
+    const [employee, setEmployee] = useState(null);
 
-    const handleCheck = () => {
-        const cleaned = phone.trim();
+    const handleCheck = async () => {
+        const cleaned = phone.trim().replace(/\D/g, "");
+        setResultMessage("");
+        setFound(null);
+        setEmployee(null);
         if (!/^[6-9]\d{9}$/.test(cleaned)) {
             setError("Please enter a valid 10-digit phone number.");
             return;
         }
         setError("");
         setSubmitting(true);
-        setTimeout(() => {
+
+        try {
+            const res = await fetch(
+                `https://rightzone-mdu.thefinsap.com/api/check-employees-phone/${cleaned}`,
+            );
+
+            const payload = await res.json().catch(() => ({}));
+            console.log(payload);
+            if (payload.status === "success") {
+                setFound(true);
+
+                setResultMessage("Employee found for this phone number.");
+            } else if (payload.status === "error") {
+                setFound(false);
+                setResultMessage(
+                    "This number does NOT belong to our employee.",
+                );
+            } else {
+                setFound(false);
+                setResultMessage("Unable to verify phone number.");
+            }
+        } catch (err) {
+            setFound(false);
+            setResultMessage("Network error. Please try again.");
+        } finally {
             setSubmitting(false);
-            alert(`Checking authentication for +91 ${cleaned}`);
-            onClose();
-        }, 800);
+        }
     };
 
     return (
@@ -122,6 +150,45 @@ function AuthenticateTeamModal({ onClose }) {
                     >
                         {submitting ? "Checking..." : "Check Now"}
                     </button>
+                    {resultMessage && (
+                        <p
+                            className={`mt-4 text-sm font-medium ${
+                                found ? "text-emerald-600" : "text-[#F36E21]"
+                            }`}
+                        >
+                            {resultMessage}
+                        </p>
+                    )}
+                    {found && employee && (
+                        <div className="mt-3 p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700">
+                            <p className="font-semibold text-slate-900">
+                                {employee.name ||
+                                    employee.full_name ||
+                                    employee.employee_name ||
+                                    employee.employee?.name}
+                            </p>
+                            {(employee.email || employee.email_id) && (
+                                <p className="text-xs mt-1">
+                                    Email: {employee.email || employee.email_id}
+                                </p>
+                            )}
+                            {(employee.designation ||
+                                employee.role ||
+                                employee.title) && (
+                                <p className="text-xs mt-1">
+                                    Role:{" "}
+                                    {employee.designation ||
+                                        employee.role ||
+                                        employee.title}
+                                </p>
+                            )}
+                            {(employee.phone || employee.mobile) && (
+                                <p className="text-xs mt-1">
+                                    Phone: {employee.phone || employee.mobile}
+                                </p>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -302,7 +369,12 @@ export default function Footer() {
                                         >
                                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                                             <polyline points="15 3 21 3 21 9" />
-                                            <line x1="10" y1="14" x2="21" y2="3" />
+                                            <line
+                                                x1="10"
+                                                y1="14"
+                                                x2="21"
+                                                y2="3"
+                                            />
                                         </svg>
                                     </a>
                                 ) : (
@@ -343,13 +415,13 @@ export default function Footer() {
                                     <strong className="text-slate-900 font-semibold">
                                         Type of Registration:
                                     </strong>{" "}
-                                    —
+                                    Individual
                                 </p>
                                 <p>
                                     <strong className="text-slate-900 font-semibold">
                                         Registration Number:
                                     </strong>{" "}
-                                    —
+                                    INH000029661
                                 </p>
                                 <p>
                                     <strong className="text-slate-900 font-semibold">

@@ -114,7 +114,10 @@ export default function Reports() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Reports</title>
-                <meta name="description" content="Access high-quality, data-driven equity and investment research reports." />
+                <meta
+                    name="description"
+                    content="Access high-quality, data-driven equity and investment research reports."
+                />
             </Helmet>
             {/* ============ LOGIN ============ */}
             <section

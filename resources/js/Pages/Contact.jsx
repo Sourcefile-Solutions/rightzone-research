@@ -177,6 +177,7 @@ function ContactForm() {
         message: "",
     });
     const [submitted, setSubmitted] = useState(false);
+    const [errors, setErrors] = useState({});
 
     const inputClass =
         "w-full h-12 rounded-xl text-md text-gray-900 px-4 focus:outline-none transition-all duration-200";
@@ -188,10 +189,31 @@ function ContactForm() {
     const handleChange = (e) =>
         setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // TODO: connect to your backend / email API
-        setSubmitted(true);
+        setErrors({});
+        try {
+            const res = await fetch('/api/contacts', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify(form),
+            });
+
+            if (res.ok) {
+                setSubmitted(true);
+                setForm({ name: '', email: '', phone: '', message: '' });
+                return;
+            }
+
+            const payload = await res.json();
+            if (payload.errors) setErrors(payload.errors);
+            else setErrors({ general: payload.message || 'Submission failed' });
+        } catch (err) {
+            setErrors({ general: 'Network error. Please try again.' });
+        }
     };
 
     if (submitted) {
@@ -204,14 +226,14 @@ function ContactForm() {
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
                         <path
                             d="M22 11.08V12a10 10 0 11-5.93-9.14"
-                            stroke="#16a34a"
+                            stroke="#1A4B9B"
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                         />
                         <path
                             d="M22 4L12 14.01l-3-3"
-                            stroke="#16a34a"
+                            stroke="#1A4B9B"
                             strokeWidth="2"
                             strokeLinecap="round"
                             strokeLinejoin="round"
@@ -225,24 +247,6 @@ function ContactForm() {
                     Thank you for reaching out. Our team will get back to you
                     within 24 hours.
                 </p>
-                <button
-                    onClick={() => {
-                        setSubmitted(false);
-                        setForm({
-                            name: "",
-                            email: "",
-                            phone: "",
-                            message: "",
-                        });
-                    }}
-                    className="mt-6 text-xs font-bold uppercase tracking-wider px-6 py-2.5 rounded-full text-white transition-all hover:opacity-90"
-                    style={{
-                        background: "#1A4B9B",
-                        boxShadow: "0 4px 14px rgba(26,75,155,0.3)",
-                    }}
-                >
-                    Send Another
-                </button>
             </div>
         );
     }
@@ -267,6 +271,9 @@ function ContactForm() {
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                     />
+                    {errors.name && (
+                        <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                    )}
                 </div>
                 <div>
                     <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">
@@ -285,6 +292,9 @@ function ContactForm() {
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                     />
+                    {errors.phone && (
+                        <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                    )}
                 </div>
             </div>
 
@@ -305,6 +315,9 @@ function ContactForm() {
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                 />
+                {errors.email && (
+                    <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
             </div>
 
             {/* Message */}
@@ -324,6 +337,13 @@ function ContactForm() {
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                 />
+                {errors.message && (
+                    <p className="text-red-500 text-sm mt-1">{errors.message}</p>
+                )}
+
+                {errors.general && (
+                    <p className="text-red-500 text-sm mt-2">{errors.general}</p>
+                )}
             </div>
 
             <button

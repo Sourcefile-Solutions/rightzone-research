@@ -90,7 +90,6 @@ const MONTHLY_SUMMARY_TOTAL = {
 };
 
 const MONTHLY_TREND = [
-    
     {
         sr: 1,
         month: "November, 2025",
@@ -172,7 +171,12 @@ const MONTHLY_TREND = [
         pending: 0,
     },
 ];
-const MONTHLY_TREND_TOTAL = { carried: 0, received: 0, resolved: 0, pending: 0 };
+const MONTHLY_TREND_TOTAL = {
+    carried: 0,
+    received: 0,
+    resolved: 0,
+    pending: 0,
+};
 
 const ANNUAL_TREND = [
     {
@@ -264,7 +268,10 @@ export default function ComplaintBoard() {
         <main className="relative w-full bg-white font-sans overflow-x-hidden text-gray-800">
             <Helmet>
                 <title>Rightzone Research | Complaint Board</title>
-                <meta name="description" content="View the complaints log and investor grievance status for Rightzone Research." />
+                <meta
+                    name="description"
+                    content="View the complaints log and investor grievance status for Rightzone Research."
+                />
             </Helmet>
             {/* ============ 1. HERO ============ */}
             <section
@@ -288,7 +295,7 @@ export default function ComplaintBoard() {
                     className="max-w-3xl mx-auto relative z-10"
                     data-aos="fade-up"
                 >
-                     <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
+                    <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold text-[#1A4B9B] leading-tight mb-5 tracking-tight">
                         Complaint <span className="text-[#F36E21]">Board</span>
                     </h1>
                     <div className="w-16 h-1 bg-[#1A4B9B] mx-auto rounded-full mb-6" />
