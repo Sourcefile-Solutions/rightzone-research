@@ -39,6 +39,7 @@ Route::post('/contacts', [ContactController::class, 'store']);
 // also accept singular path in case client posts to /api/contact
 Route::post('/contact', [ContactController::class, 'store']);
 
+Route::get('/kyc/get-token-data', [KycController::class, 'index']);
 Route::post('/kyc/checkphone', [KycController::class, 'checkphone']);
 // allow GET /api/kyc/checkphone/{phone} for external services that use GET
 Route::get('/kyc/checkphone/{phone?}', [KycController::class, 'checkphone']);

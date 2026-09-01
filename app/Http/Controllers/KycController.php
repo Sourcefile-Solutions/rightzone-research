@@ -13,6 +13,67 @@ use Illuminate\Validation\Rule;
 class KycController extends Controller
 {
 
+    protected function getCRM($id)
+    {
+        $crmLink = match ((string)$id) {
+            '1' => 'https://rightzone-blr.thefinsap.com',
+            '2' => 'https://rightzone-mdu.thefinsap.com',
+            default => 'https://rightzone-blr.thefinsap.com',
+        };
+
+        return $crmLink;
+    }
+
+    public function index(Request $request)
+    {
+
+
+
+        if ($request->token) {
+
+            [$crm, $token] = explode('-', $request->token, 2);
+
+            $crmLink = $this->getCRM($crm);
+
+            $result = Http::get("$crmLink/api/rightzone-get-consent-with-token?token=$token");
+
+
+            if ($result['status']) {
+
+
+                return response()->json([
+                    'status' => 'success',
+                    'action' => 'continue',
+                    'url' => $crm,
+                    'phone' => $result['lead'][0]['phone'],
+                    // 'data' => $result['data'],
+                    // 'fields' => $result['fields'],
+                    // 'mandatory' => $result['mandatory'],
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'action' => 'stop',
+                'url' => '',
+                'phone' => '',
+                // 'data' => $result['data'],
+                // 'fields' => $result['fields'],
+                // 'mandatory' => $result['mandatory'],
+            ]);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'action' => 'continue',
+            'url' => '',
+            'phone' => '',
+            // 'data' => $result['data'],
+            // 'fields' => $result['fields'],
+            // 'mandatory' => $result['mandatory'],
+        ]);
+    }
+
     public function getPhone(Request $request)
     {
         $lead = $request->user();
@@ -38,20 +99,28 @@ class KycController extends Controller
 
     public function checkphone(Request $request)
     {
-
-        // Accept phone from route param, query or POST body to support GET clients
-        $phone = $request->route('phone') ?? $request->query('phone') ?? $request->input('phone');
-
-        $data = ['phone' => $phone];
-
-        $validated = Validator::make($data, [
-            'phone' => 'required|digits:10',
-        ])->validate();
-
-        $result = Http::post('https://rightzone-mdu.thefinsap.com/api/dresearch-check-phone', [
-            'phone' => $validated['phone'],
+        
+        $validated = $request->validate([
+            'phone' => 'required|digits: 10'
         ]);
+        
+        
+        if($request->url){
+            
+          $crmLink =  $this-> getCRM($request->url);
+        }else{
+             $crmLink =  'https://rightzone-blr.thefinsap.com';
+        }
 
+
+
+
+        $result = Http::post("$crmLink/api/dresearch-check-phone", [
+            'phone' => $validated['phone'],
+
+        ]);
+        
+     
 
         //  return $result;
         if ($result['status'] == 'error' && $result['action'] == 'error') {
@@ -71,7 +140,6 @@ class KycController extends Controller
                 ]
             );
             //$user->otp= random_int(1234, 9876);//
-            // return 123;
             if ($user->save()) return response()->json(['status' => 'success', 'action' => 'continue', 'message' => 'OTP send successfully', 'data' => $result['data'], 'fields' => $result['fields']]);
 
             throw ValidationException::withMessages([

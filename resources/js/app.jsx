@@ -79,7 +79,7 @@ function App() {
                             element={<Disclosure />}
                         />
                         <Route
-                            path="/client-consent-form"
+                            path="/client-consent-form/:token?"
                             element={<ClientConsentForm />}
                         />
                         <Route
