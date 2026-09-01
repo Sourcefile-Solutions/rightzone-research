@@ -17,7 +17,7 @@ class KycController extends Controller
     {
         $crmLink = match ((string)$id) {
             '1' => 'https://rightzone-blr.thefinsap.com',
-            '2' => 'https://rightzone-mdu.thefinsap.com',
+            '2' => 'https://rightzone-blr.thefinsap.com', // Temporarily using BLR instead of MDU
             default => 'https://rightzone-blr.thefinsap.com',
         };
 
@@ -26,9 +26,6 @@ class KycController extends Controller
 
     public function index(Request $request)
     {
-
-
-
         if ($request->token) {
 
             [$crm, $token] = explode('-', $request->token, 2);
@@ -99,17 +96,17 @@ class KycController extends Controller
 
     public function checkphone(Request $request)
     {
-        
+
         $validated = $request->validate([
             'phone' => 'required|digits: 10'
         ]);
-        
-        
-        if($request->url){
-            
-          $crmLink =  $this-> getCRM($request->url);
-        }else{
-             $crmLink =  'https://rightzone-blr.thefinsap.com';
+
+
+        if ($request->url) {
+
+            $crmLink =  $this->getCRM($request->url);
+        } else {
+            $crmLink =  'https://rightzone-blr.thefinsap.com';
         }
 
 
@@ -119,8 +116,8 @@ class KycController extends Controller
             'phone' => $validated['phone'],
 
         ]);
-        
-     
+
+
 
         //  return $result;
         if ($result['status'] == 'error' && $result['action'] == 'error') {
@@ -159,7 +156,14 @@ class KycController extends Controller
             'otp' => 'required|digits:4',
         ]);
 
-        $result = Http::post('https://rightzone-mdu.thefinsap.com/api/dresearch-verify-otp', [
+        if ($request->url) {
+
+            $crmLink =  $this->getCRM($request->url);
+        } else {
+            $crmLink =  'https://rightzone-blr.thefinsap.com';
+        }
+
+        $result = Http::post("$crmLink/api/dresearch-verify-otp", [
             'phone' => $validated['phone'],
             'otp' => $validated['otp'],
         ]);
