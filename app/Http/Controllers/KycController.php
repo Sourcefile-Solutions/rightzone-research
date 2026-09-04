@@ -98,7 +98,7 @@ class KycController extends Controller
     {
 
         $validated = $request->validate([
-            'phone' => 'required|digits: 10'
+            'phone' => 'required|digits:10'
         ]);
 
 

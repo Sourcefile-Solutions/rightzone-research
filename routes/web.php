@@ -17,10 +17,15 @@ Route::post('/api/check-employees-phone', [ContactController::class, 'checkEmplo
 Route::get('/api/check-employees-phone/{phone?}', [ContactController::class, 'checkEmployeesPhone'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
+
 // KYC proxy endpoints (POST + GET) to support client consent form
+Route::get('/api/kyc/get-token-data', [KycController::class, 'index'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 Route::post('/api/kyc/checkphone', [KycController::class, 'checkphone'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 Route::get('/api/kyc/checkphone/{phone?}', [KycController::class, 'checkphone'])
+    ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
+Route::post('/api/kyc/verify-otp', [KycController::class, 'verifyOtp'])
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
 Route::get('/{any}', function () {

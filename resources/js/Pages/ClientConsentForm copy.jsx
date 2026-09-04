@@ -5,7 +5,10 @@ import "aos/dist/aos.css";
 import { Helmet } from "react-helmet";
 import { useSearchParams } from "react-router-dom";
 
+
 /* ---------- Background: faint market grid + ticking price lines (matches rest of site) ---------- */
+
+
 const MarketGridBG = ({ className = "" }) => (
     <svg
         className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
