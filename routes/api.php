@@ -48,8 +48,5 @@ Route::post('/kyc/verify-otp', [KycController::class, 'verifyOtp']);
 
 Route::group(['middleware' => 'auth:sanctum'], function () {
   Route::post('/kyc/submit-kyc', [KycController::class, 'store']);
-   Route::get('/kyc/get-phone', [KycController::class, 'getPhone']);
-
- 
+  Route::get('/kyc/get-phone', [KycController::class, 'getPhone']);
 });
-

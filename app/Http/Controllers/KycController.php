@@ -17,7 +17,7 @@ class KycController extends Controller
     {
         $crmLink = match ((string)$id) {
             '1' => 'https://rightzone-blr.thefinsap.com',
-            '2' => 'https://rightzone-blr.thefinsap.com', // Temporarily using BLR instead of MDU
+            '2' => 'https://rightzone-mdu.thefinsap.com', // Temporarily using BLR instead of MDU
             default => 'https://rightzone-blr.thefinsap.com',
         };
 
@@ -32,7 +32,7 @@ class KycController extends Controller
 
             $crmLink = $this->getCRM($crm);
 
-             $result = Http::get("$crmLink/api/rightzone-get-consent-with-token?token=$token");
+              $result = Http::get("$crmLink/api/rightzone-get-consent-with-token?token=$token");
 
 
             if ($result['status']) {
