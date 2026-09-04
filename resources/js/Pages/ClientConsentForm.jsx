@@ -318,7 +318,7 @@ export default function ClientConsentForm() {
 
     const [params, setParams] = useState({
         tab: "phone",
-        url: "",
+        url: urlToken?.charAt(0) || "",
         phone: "",
         lockPhone: false,
         token: authToken || "",
@@ -338,42 +338,39 @@ export default function ClientConsentForm() {
     const [resendTimer, setResendTimer] = useState(0);
 
     const fetchTokenData = async (token) => {
-        try {
-            const response = await fetch(
-                `/api/kyc/get-token-data?token=${token}`,
-                {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                },
-            );
+    try {
+        const response = await fetch(`/api/kyc/get-token-data?token=${token}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
 
-            if (!response.ok) {
-                throw new Error("Failed to fetch token data");
-            }
-            const data = await response.json();
-            if (data.status == "success") {
-                setParams({
-                    tab: "phone",
-                    url: data.url,
-                    phone: data.phone,
-                    lockPhone: true,
-                });
-            } else {
-                setParams({
-                    tab: "phone",
-                });
-            }
-        } catch (error) {
-            console.error("Error fetching token data:", error);
-            setParams({
+        if (!response.ok) throw new Error("Failed to fetch token data");
+
+        const data = await response.json();
+        if (data.status == "success") {
+            setParams((prev) => ({
+                ...prev,
                 tab: "phone",
-            });
-        } finally {
-            setIsLoading(false);
+                url: data.url,
+                phone: data.phone,
+                lockPhone: true,
+            }));
+        } else {
+            setParams((prev) => ({
+                ...prev,
+                tab: "phone",
+            }));
         }
-    };
+    } catch (error) {
+        console.error("Error fetching token data:", error);
+        setParams((prev) => ({
+            ...prev,
+            tab: "phone",
+        }));
+    } finally {
+        setIsLoading(false);
+    }
+};
 
     const getPhoneData = async (token) => {
         try {
@@ -411,8 +408,11 @@ export default function ClientConsentForm() {
                     }
                 });
 
-                console.log("Initial existing files:", initialExistingFiles);
-
+                console.log("fields:", fields);
+                console.log("mandatory:", mandatory);
+                console.log("data:", data);
+                console.log("formData:", initialFormData);
+                console.log("existingFiles:", initialExistingFiles);
                 setParams((prevParams) => ({
                     ...prevParams,
                     fields: fields,
@@ -422,6 +422,7 @@ export default function ClientConsentForm() {
                     existingFiles: initialExistingFiles,
                     tab: "form",
                     phone: response.data.phone || prevParams.phone,
+                    token: token,
                 }));
             }
         } catch (error) {
@@ -608,18 +609,24 @@ export default function ClientConsentForm() {
                 otp: params.otp,
             });
 
-            if (response.data.status == "success") {
-                console.log(
-                    "OTP verified successfully, token:",
-                    response.data.token,
-                );
+            if (response.data.status === "success") {
+    const newToken = response.data.token;
 
-                // Store token in localStorage with 1 hour expiry (like discipline research)
-                setWithExpiry("auth_token", response.data.token, 1);
+    console.log("OTP verified successfully, token:", newToken);
 
-                // Load form data using the new token
-                getPhoneData(response.data.token);
-            }
+    // Store token
+    setWithExpiry("auth_token", newToken, 1);
+
+    // IMPORTANT: update params.token
+    setParams((prev) => ({
+        ...prev,
+        token: newToken,
+        tab: "form",
+    }));
+
+    // Load form data
+    getPhoneData(newToken);
+}
         } catch (e) {
             console.log("error", e);
             let errorMessage = "Invalid OTP. Please try again.";
@@ -643,6 +650,7 @@ export default function ClientConsentForm() {
     };
 
     const submitKyc = async (e) => {
+        
         e.preventDefault();
 
         console.log("Submitting KYC with params:", params);
@@ -657,8 +665,8 @@ export default function ClientConsentForm() {
         const newErrors = {};
 
         params.fields.forEach((field) => {
-            const isMandatory = params.mandatory.includes(field);
-            const value = params.formData[field];
+             const isMandatory = params.mandatory.includes(field);
+    const value = field === "phone" ? params.phone : params.formData[field];
 
             console.log(
                 `Field: ${field}, Mandatory: ${isMandatory}, Value: ${value}, Existing: ${params.existingFiles[field]}`,
@@ -1069,15 +1077,10 @@ export default function ClientConsentForm() {
                                                             name="full_name"
                                                             placeholder="Enter your fullname"
                                                             value={
-                                                                params
-                                                                    .formData
-                                                                    .full_name ||
-                                                                (params.data &&
-                                                                    params
-                                                                        .data
-                                                                        .full_name) ||
-                                                                ""
-                                                            }
+    (params.formData && params.formData.full_name) ||
+    (params.data && params.data.full_name) ||
+    ""
+}
                                                             onChange={(e) =>
                                                                 changeValue(e)
                                                             }

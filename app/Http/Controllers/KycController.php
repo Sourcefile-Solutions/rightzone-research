@@ -32,7 +32,7 @@ class KycController extends Controller
 
             $crmLink = $this->getCRM($crm);
 
-            $result = Http::get("$crmLink/api/rightzone-get-consent-with-token?token=$token");
+             $result = Http::get("$crmLink/api/rightzone-get-consent-with-token?token=$token");
 
 
             if ($result['status']) {
